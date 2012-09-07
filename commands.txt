@@ -1,0 +1,30 @@
+# table creation for customer_profile:
+
+create table customer_profile(user_id string,user_name string,birth_year int,age int,gender string,country string,created_date string) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t';
+
+# table creation for revenue transaction:
+
+create table revenue_tx(user_id string,tx_id string,amount int,txt_date string) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t';
+
+#table creation for game_events table:
+
+create table game_events(thedate string,uid string,atevent string,atlevel int,gold int,xp int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t';
+
+------------------------------------------------------------------------------------
+
+#commands to populate data into table-hdfs:
+#to list the file in hdfs:
+  hadoop fs -ls /user/hive/warehouse/
+#to copy data from local to hdfs:
+  hadoop fs -put user.tsc /user/hive/warehouse/customer_profile/.
+# to display the data that is copied 
+  hadoop fs -cat /user/hive/warehouse/customer_profile/user.tsv
+
+
+-------------------------------------------------------------------------------------
+
+# Date,gender,Dau query:
+select g.thedate,c.gender,count(distinct g.uid) from game_events g join customer_profile c on g.uid=c.user_id group by g.thedate,c.gender sort by thedate desc;
+
+# Date,revenue query:
+select tx_date,sum(amount)*7/100 from revenue_tx group by tx_date sort by tx_date desc;
