@@ -1,0 +1,32 @@
+# date,age_bucket,dau:
+
+select g.thedate as thedate,(case when c.age>=20 and c.age<=30 then 'age(20-30)'
+when c.age>=30 and c.age<=40 then 'age(30-40)'
+when c.age>=40 and c.age<=50 then 'age(40-50)'
+when c.age>=50 then 'age(>50)'
+ else 'others' end) as age,count(distinct g.uid) as dau from customer_profile c 
+join game_events g on c.user_id=g.uid group by g.thedate,(case when c.age>=20 and c.age<=30 then 'age(20-30)'
+when c.age>=30 and c.age<=40 then 'age(30-40)'
+when c.age>=40 and c.age<=50 then 'age(40-50)'
+when c.age>=50 then 'age(>50)'
+ else 'others' end);
+
+#date,arpdau:
+
+select tx_date,revenue/dau from
+(select r.tx_date,sum(r.amount)*7/100 as revenue from revenue_tx r join game_events g
+on r.tx_date=g.thedate group by r.tx_date)revenue1 join
+(select g.thedate,count(distinct g.uid) as dau from customer_profile c join game_events g
+on c.user_id=g.uid group by g.thedate)dau1 
+group by tx_date,revenue/dau;
+
+
+# table creation with partitioning date column:
+
+create table customer_partition(user_id string,user_name string,birth_year int,age int,gender string,country string)
+PARTITIONED BY(created_date string)
+ ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t';
+
+#load data into partitioned table:
+
+LOAD DATA LOCAL INPATH 'user.tsv' OVERWRITE INTO TABLE customer_partition PARTITION (created_date='2012-08-19');
